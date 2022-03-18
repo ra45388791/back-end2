@@ -21,19 +21,34 @@ app.get('/', async (req, res) => {
 });
 
 app.post('/', async (req, res) => {
-    const jsonData = await getJSON();
-    const newArticleData = await parseFormFunc(req);
-    const eventFunc = newArticleData.func;
-    const eventData = newArticleData.data;
+    const jsonData = await getJSON(); // 取得JSON資料
+    const newArticleData = await parseFormFunc(req); // formData表單解析
+    const eventFunc = newArticleData.func; // axios 指定的方法
+    const eventData = newArticleData.data; // axios 中的資料
+
+
+    if (eventFunc === 'addArticle') {
+        // 加入清單方法
+
+        // 推入資料
+        jsonData.push(eventData);
+        // 寫入json
+        await writeJson(jsonData);
+        res.send(jsonData);
+    } else if (eventFunc === 'chengeState') {
+        // 更新清單資料
+        jsonData.forEach((e) => {
+            if (e.id === eventData.id) {
+                console.log(eventData);
+                e.state = eventData.state;
+                e.stateImg = eventData.stateImg;
+            }
+        });
+        await writeJson(jsonData);
+        res.send(jsonData);
+    }
 
     // 完整資料格式
-    console.log(newArticleData);
-    // 推入資料
-    jsonData.push(eventData);
-    // 寫入json
-    await writeJson(jsonData);
-
-    res.send(jsonData);
 });
 
 app.delete('/', async (req, res) => {
@@ -89,7 +104,6 @@ function getJSON () {
  * @return {object}
  */
 function parseFormFunc (req) {
-    console.log(typeof req);
     return new Promise((resolve, reject) => {
         parseFormdata(req, (err, data) => {
             if (err) reject(err);
@@ -102,8 +116,8 @@ function parseFormFunc (req) {
         const func = promiseRes.func;
         const data = JSON.parse(promiseRes.data);
         const jsonData = {
-            func: func,
-            data: data,
+            func: func, // 指定操作方法
+            data: data, // 資料
         };
 
         // console.log(jsonData);
@@ -114,7 +128,7 @@ function parseFormFunc (req) {
 }
 
 /**
- * post 取得表單內容方法
+ * post 寫入JSON方法
  * @param {json} event
  * @return {undefined}
  */
