@@ -35,6 +35,17 @@ app.post('/', async (req, res) => {
         // 寫入json
         await writeJson(jsonData);
         res.send(jsonData);
+    } else if (eventFunc === 'reviseArticle') {
+        // 修改內文
+        jsonData.forEach((e) => {
+            if (e.id === eventData.id) {
+                e.title = eventData.title;
+                e.content = eventData.content;
+                e.date = eventData.date;
+            }
+        });
+        await writeJson(jsonData);
+        // 不須回傳
     } else if (eventFunc === 'chengeState') {
         // 更新清單資料
         jsonData.forEach((e) => {
@@ -47,8 +58,6 @@ app.post('/', async (req, res) => {
         await writeJson(jsonData);
         res.send(jsonData);
     }
-
-    // 完整資料格式
 });
 
 app.delete('/', async (req, res) => {
