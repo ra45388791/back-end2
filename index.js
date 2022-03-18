@@ -44,6 +44,7 @@ app.listen(process.env.PORT, () => {
     // console.log(port);
     console.log('監聽中');
     console.log('測試自動部屬');
+    console.log('測試自動部屬');
     // console.log(process.env.PORT);
 })
 
