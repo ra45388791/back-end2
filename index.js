@@ -40,7 +40,7 @@ app.post('/', async (req, res) => {
 });
 
 // process.env.PORT
-app.listen(3000, () => {
+app.listen(process.env.PORT, () => {
     // console.log(port);
     console.log('監聽中');
     // console.log(process.env.PORT);
