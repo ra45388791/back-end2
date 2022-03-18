@@ -1,0 +1,41 @@
+{
+    "env": {
+        "browser": true,
+        "commonjs": true,
+        "es2021": true
+    },
+    "extends": [
+        "google"
+    ],
+    "parserOptions": {
+        "ecmaVersion": "latest"
+    },
+    "rules": {
+        "indent": [
+            "error",
+            4,
+            {
+                "SwitchCase": 1
+            }
+        ],
+        "linebreak-style": [
+            "off"
+        ],
+        "space-before-function-paren": [
+            "error",
+            "always"
+        ],
+        "valid-jsdoc": [
+            "error"
+        ],
+        "max-len": [
+            "error",
+            {
+                "ignoreStrings": true, //忽略包含雙引號或單引號字符串的行
+                "ignoreTemplateLiterals": true, //忽略包含模板文字的行
+                "ignoreComments": true, //忽略自己行中的所有尾隨註釋和註釋
+                "ignoreUrls": true //忽略包含 URL 的行
+            }
+        ]
+    }
+}
