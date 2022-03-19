@@ -13,7 +13,7 @@ const port = process.env.PORT || 3000;
 
 
 // 開啟cors權限
-app.use(cors());
+app.use(cors(), express.json());
 
 app.get('/', async (req, res) => {
     const jsonData = await getJSON();
@@ -22,9 +22,10 @@ app.get('/', async (req, res) => {
 
 app.post('/', async (req, res) => {
     const jsonData = await getJSON(); // 取得JSON資料
-    const newArticleData = await parseFormFunc(req); // formData表單解析
-    const eventFunc = newArticleData.func; // axios 指定的方法
-    const eventData = newArticleData.data; // axios 中的資料
+    const articleData = req.body;
+    // const newArticleData = await parseFormFunc(req); // formData表單解析
+    const eventFunc = articleData.func; // axios 指定的方法
+    const eventData = articleData.data; // axios 中的資料
 
 
     if (eventFunc === 'addArticle') {
@@ -45,12 +46,11 @@ app.post('/', async (req, res) => {
             }
         });
         await writeJson(jsonData);
-        // 不須回傳
+        res.send();
     } else if (eventFunc === 'chengeState') {
         // 更新清單資料
         jsonData.forEach((e) => {
             if (e.id === eventData.id) {
-                console.log(eventData);
                 e.state = eventData.state;
                 e.stateImg = eventData.stateImg;
             }
@@ -62,9 +62,9 @@ app.post('/', async (req, res) => {
 
 app.delete('/', async (req, res) => {
     const jsonData = await getJSON();
-    const getData = await parseFormFunc(req);
-    const eventFunc = getData.func;
-    const eventData = getData.data;
+    const articleData = req.body;
+    const eventFunc = articleData.func;
+    const eventData = articleData.data;
     // 取得id值
     console.log(eventData.id);
 
@@ -112,29 +112,31 @@ function getJSON () {
  * @param {object} req
  * @return {object}
  */
-function parseFormFunc (req) {
-    return new Promise((resolve, reject) => {
-        parseFormdata(req, (err, data) => {
-            if (err) reject(err);
-            resolve(data.fields);
-            return;
-        });
-    }).then((promiseRes) => {
-        // 轉換成json格式
+// function parseFormFunc(req) {
+//     return new Promise((resolve, reject) => {
+//         parseFormdata(req, (err, data) => {
+//             if (err) reject(err);
+//             console.log(data.fields);
+//             resolve(data.fields);
+//             return;
+//         });
+//     }).then((promiseRes) => {
+//         // 轉換成json格式
 
-        const func = promiseRes.func;
-        const data = JSON.parse(promiseRes.data);
-        const jsonData = {
-            func: func, // 指定操作方法
-            data: data, // 資料
-        };
+//         const func = promiseRes.func;
+//         // const data = JSON.parse(promiseRes.data);
+//         const data = JSON.stringify(promiseRes.data);
+//         const jsonData = {
+//             func: func, // 指定操作方法
+//             data: data, // 資料
+//         };
 
-        // console.log(jsonData);
-        return jsonData;
-    }).catch((err) => {
-        throw err;
-    });
-}
+//         // console.log(jsonData);
+//         return jsonData;
+//     }).catch((err) => {
+//         throw err;
+//     });
+// }
 
 /**
  * post 寫入JSON方法
