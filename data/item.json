@@ -2,8 +2,6 @@
     {
         "id": "fb7c39f8-50d1-4409-938a-7f9d5db32636",
         "itemShow": true,
-        "menu": false,
-        "menuClass": "closeItem",
         "state": false,
         "stateImg": "images/close.png",
         "title": "測試標題ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss",
@@ -14,8 +12,7 @@
     {
         "id": "693e0580-8e13-4f1f-ac53-c80ddf249324",
         "itemShow": true,
-        "menu": false,
-        "menuClass": "closeItem",
+
         "state": false,
         "stateImg": "images/close.png",
         "title": "dffsfd",
@@ -26,8 +23,6 @@
     {
         "id": "12a1f9b0-12ef-4681-bf18-bf1f163e6bca",
         "itemShow": true,
-        "menu": false,
-        "menuClass": "closeItem",
         "state": true,
         "stateImg": "images/check.png",
         "title": "sdfsdsf",
