@@ -9,7 +9,7 @@ const {log} = require('console');
 
 const app = express();
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 5000;
 
 
 // 開啟cors權限
@@ -46,7 +46,7 @@ app.post('/', async (req, res) => {
             }
         });
         await writeJson(jsonData);
-        res.send();
+        res.send(jsonData);
     } else if (eventFunc === 'chengeState') {
         // 更新清單資料
         jsonData.forEach((e) => {
@@ -63,7 +63,7 @@ app.post('/', async (req, res) => {
 app.delete('/', async (req, res) => {
     const jsonData = await getJSON();
     const articleData = req.body;
-    const eventFunc = articleData.func;
+    // const eventFunc = articleData.func;
     const eventData = articleData.data;
     // 取得id值
     console.log(eventData.id);
@@ -153,3 +153,5 @@ function writeJson (event) {
         return;
     });
 }
+
+
