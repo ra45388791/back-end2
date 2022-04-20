@@ -5,7 +5,6 @@ const parseFormdata = require('parse-formdata');
 const cors = require('cors');
 const fs = require('fs');
 const express = require('express');
-const {log} = require('console');
 
 const app = express();
 
