@@ -25,7 +25,7 @@ app.post('/', async (req, res) => {
     const articleData = req.body;
     // const newArticleData = await parseFormFunc(req); // formData表單解析
     const eventFunc = articleData.func; // axios 指定的方法
-    const eventData = articleData.data; // axios 中的資料
+    const eventData = articleData.data; // axios 中的資料。
 
 
     if (eventFunc === 'addArticle') {
