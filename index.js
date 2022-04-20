@@ -1,156 +1,191 @@
 /* eslint-disable no-unused-vars */
-const http = require('http');
-const url = require('url');
-const parseFormdata = require('parse-formdata');
-const cors = require('cors');
-const fs = require('fs');
+const {MongoClient} = require('mongodb'); // 資料庫
 const express = require('express');
+const cors = require('cors');
+const {get} = require('express/lib/response');
+// const http = require('http');
+// const url = require('url');
+// const parseFormdata = require('parse-formdata');
+// const fs = require('fs');
 
 const app = express();
 
+// 資料庫api
+const url = 'mongodb://user123:orange7380@cluster0-shard-00-00.ndp9d.mongodb.net:27017,cluster0-shard-00-01.ndp9d.mongodb.net:27017,cluster0-shard-00-02.ndp9d.mongodb.net:27017/testDataBase?ssl=true&replicaSet=atlas-ifvg1s-shard-0&authSource=admin&retryWrites=true&w=majority';
+const client = new MongoClient(url);
+
 const port = process.env.PORT || 5000;
-
-
 // 開啟cors權限
 app.use(cors(), express.json());
 
+
 app.get('/', async (req, res) => {
-    const jsonData = await getJSON();
-    res.send(jsonData);
+    const getData = await getAllDataBase();
+
+
+    res.send(getData);
 });
 
 app.post('/', async (req, res) => {
-    const jsonData = await getJSON(); // 取得JSON資料
     const articleData = req.body;
-    // const newArticleData = await parseFormFunc(req); // formData表單解析
     const eventFunc = articleData.func; // axios 指定的方法
     const eventData = articleData.data; // axios 中的資料。
 
 
     if (eventFunc === 'addArticle') {
-        // 加入清單方法
+        // 把取得的文章寫入 mongoDB
+        const getData = await addNewArticle(eventData);
+        // 回傳全部的article資料
+        res.send(getData);
+    }
+});
 
-        // 推入資料
-        jsonData.push(eventData);
-        // 寫入json
-        await writeJson(jsonData);
-        res.send(jsonData);
-    } else if (eventFunc === 'reviseArticle') {
+app.patch('/', async (req, res) => {
+    const articleData = req.body;
+    const eventFunc = articleData.func; // axios 指定的方法
+    const eventData = articleData.data; // axios 中的資料。
+
+    console.log(eventFunc);
+    console.log(eventData);
+
+    if (eventFunc === 'reviseArticle') {
         // 修改內文
-        jsonData.forEach((e) => {
-            if (e.id === eventData.id) {
-                e.title = eventData.title;
-                e.content = eventData.content;
-                e.date = eventData.date;
-            }
-        });
-        await writeJson(jsonData);
-        res.send(jsonData);
+        const getData = await editArticle('reviseArticle', eventData);
+
+        res.send(getData);
     } else if (eventFunc === 'chengeState') {
         // 更新清單資料
-        jsonData.forEach((e) => {
-            if (e.id === eventData.id) {
-                e.state = eventData.state;
-                e.stateImg = eventData.stateImg;
-            }
-        });
-        await writeJson(jsonData);
-        res.send(jsonData);
+        const getData = await editArticle('chengeState', eventData);
+
+        res.send(getData);
     }
 });
 
 app.delete('/', async (req, res) => {
-    const jsonData = await getJSON();
     const articleData = req.body;
-    // const eventFunc = articleData.func;
-    const eventData = articleData.data;
-    // 取得id值
-    console.log(eventData.id);
+    const idValue = articleData.data._id;
 
-    jsonData.forEach((e, index) => {
-        if (e.id === eventData.id) {
-            jsonData.splice(index, 1);
-        }
-    });
+    const getData = await deleteArticle(idValue);
 
-    // 寫入json
-    await writeJson(jsonData);
-
-    res.send(jsonData);
+    res.send(getData);
 });
 
 // !process.env.PORT
 app.listen(port, () => {
-    // console.log(port);
     console.log('監聽中-端口:' + port);
     console.log('測試自動部屬');
     // console.log(process.env.PORT);
 });
 
-
 /**
- * get 讀取JSON資料
  * @return {json}
  */
-function getJSON () {
-    return new Promise((resolve, reject) => {
-        fs.readFile('./data/item.json', function (err, getData) {
-            if (err) reject(err);
-            // 取得的資料是數字流型態 要轉成字串
-            const json = JSON.parse(getData.toString());
-            resolve(json);
-            return;
+async function getAllDataBase () {
+    try {
+        // 開啟連結
+        await client.connect();
+        // 選擇資料庫
+        const db = client.db('testDataBase');
+        // 選擇資料表
+        const movies = db.collection('indexDB');
+
+        const getAllData = await movies.find().toArray(); // 找到 title = Back to the Future 的資料
+
+        return getAllData;
+    } catch (err) {
+        console.error(err);
+    } finally {
+        await client.close(); // !關閉連線
+    }
+}
+
+/**
+ *
+ * @param {*} article
+ */
+async function addNewArticle (article) {
+    try {
+        // 開啟連結
+        await client.connect();
+        // 選擇資料庫
+        const db = client.db('testDataBase');
+        // 選擇資料表
+        const movies = db.collection('indexDB');
+
+        await movies.insertOne(article); // 新增 { title: 'Back to the Future' }這包資料
+
+        const getAllData = await movies.find().toArray(); // 找到所有資料
+        return getAllData;
+    } catch (err) {
+        console.error(err);
+    } finally {
+        await client.close(); // !關閉連線
+    }
+}
+
+/**
+ *
+ * @param {*} article
+ * @return {array}
+ */
+async function editArticle (className, article) {
+    let setArticle = '';
+    if (className === 'reviseArticle') { // 修改內文
+        setArticle = {
+            title: article.title,
+            content: article.content,
+            date: article.date,
+        };
+    } else if (className === 'chengeState') { // 修改文章狀態
+        setArticle = {
+            state: article.state,
+            stateImg: article.stateImg,
+        };
+    }
+
+    try {
+        // 開啟連結
+        await client.connect();
+        // 選擇資料庫
+        const db = client.db('testDataBase');
+        // 選擇資料表
+        const movies = db.collection('indexDB');
+        await movies.updateOne({'_id': article._id}, { // 新增 { title: 'Back to the Future' }這包資料
+            $set: setArticle, // 設定內容
         });
-    }).then((promiseRes) => {
-        return promiseRes;
-    });
+
+        const getAllData = await movies.find().toArray(); // 找到所有資料
+        return getAllData;
+    } catch (err) {
+        console.error(err);
+    } finally {
+        await client.close(); // !關閉連線
+    }
 }
 
-/**
- * post 取得表單內容方法
- * @param {object} req
- * @return {object}
- */
-// function parseFormFunc(req) {
-//     return new Promise((resolve, reject) => {
-//         parseFormdata(req, (err, data) => {
-//             if (err) reject(err);
-//             console.log(data.fields);
-//             resolve(data.fields);
-//             return;
-//         });
-//     }).then((promiseRes) => {
-//         // 轉換成json格式
-
-//         const func = promiseRes.func;
-//         // const data = JSON.parse(promiseRes.data);
-//         const data = JSON.stringify(promiseRes.data);
-//         const jsonData = {
-//             func: func, // 指定操作方法
-//             data: data, // 資料
-//         };
-
-//         // console.log(jsonData);
-//         return jsonData;
-//     }).catch((err) => {
-//         throw err;
-//     });
-// }
 
 /**
- * post 寫入JSON方法
- * @param {json} event
- * @return {undefined}
+ *
+ * @param {*} article
  */
-function writeJson (event) {
-    // 轉成字串型態
-    const str = JSON.stringify(event);
+async function deleteArticle (idValue) {
+    console.log(idValue);
+    try {
+        // 開啟連結
+        await client.connect();
+        // 選擇資料庫
+        const db = client.db('testDataBase');
+        // 選擇資料表
+        const movies = db.collection('indexDB');
 
-    // 寫入
-    fs.writeFile('./data/item.json', str, (err) => {
-        if (err) throw (err);
-        return;
-    });
+        await movies.deleteMany({'_id': idValue}); // 刪除
+
+        const getAllData = await movies.find().toArray(); // 找到所有資料
+        return getAllData;
+    } catch (err) {
+        console.error(err);
+    } finally {
+        await client.close(); // !關閉連線
+    }
 }
-
 
